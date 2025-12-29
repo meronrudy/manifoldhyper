@@ -67,19 +67,21 @@ enum Commands {
 
 fn main() {
     let args = Args::parse();
+    let pretty = args.pretty;
+    let command = args.command;
 
-    if let Err(err) = run(args) {
+    if let Err(err) = run(command, pretty) {
         let error = serde_json::json!({
             "status": "error",
             "message": err.to_string(),
         });
-        eprintln!("{}", format_output(&error, true));
+        eprintln!("{}", format_output(&error, pretty));
         std::process::exit(1);
     }
 }
 
-fn run(args: Args) -> anyhow::Result<()> {
-    let output = match args.command {
+fn run(command: Commands, pretty: bool) -> anyhow::Result<()> {
+    let output = match command {
         Commands::Create {
             name,
             nodes,
@@ -96,11 +98,11 @@ fn run(args: Args) -> anyhow::Result<()> {
         Commands::Export { input, output } => commands::export(commands::ExportArgs {
             input,
             output,
-            pretty: args.pretty,
+            pretty,
         }),
     }?;
 
-    println!("{}", format_output(&output, args.pretty));
+    println!("{}", format_output(&output, pretty));
     Ok(())
 }
 
